@@ -76,20 +76,18 @@ document.addEventListener("DOMContentLoaded", function () {
         const endorsementText = inputField.value;
         const fromText = fromField.value;
         const toText = toField.value;
-
+    
         // Add data to the database
         const newEndorsementRef = push(endorsementsRef);
         update(newEndorsementRef, {
             to: toText,
             endorsement: endorsementText,
             from: fromText,
-            likes: 0,
-            clicked: false
+            likes: 0,  // Asegura que se inicialice en 0
         });
-
+    
         // Clear input fields
         inputField.value = "";
         fromField.value = "";
         toField.value = "";
     });
-});
