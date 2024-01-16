@@ -35,11 +35,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const listItem = document.createElement("li");
             const endorsementId = key;
 
+            // Check if the endorsement has already been liked
+            const liked = clickedEndorsements.has(endorsementId) || getCookie(`like_${endorsementId}`) === 'true';
+
             listItem.innerHTML = `
                 <p id="to-field1">To ${endorsementData.to}</p>
                 <p>${endorsementData.endorsement}</p>
                 <p id="from-field1">From ${endorsementData.from}</p>
-                <p id="like-counter" data-endorsement-id="${endorsementId}">❤️ ${endorsementData.likes}</p>
+                <p id="like-counter" data-endorsement-id="${endorsementId}">❤️ ${liked ? endorsementData.likes : endorsementData.likes + 1}</p>
             `;
 
             // Add click event listener to the heart emoji
@@ -47,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             likeCounter.addEventListener("click", async () => {
                 console.log("Heart Clicked!");
-                
+
                 if (!clickedEndorsements.has(endorsementId)) {
                     const currentLikes = parseInt(likeCounter.innerText.split(" ")[1]);
                     console.log("Current Likes:", currentLikes);
