@@ -22,9 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const endorsementsList = document.getElementById("endorsements-list");
     const publishButton = document.getElementById("publish-button");
 
-    // Utilizamos un conjunto (Set) para rastrear los clics
-    const clickedEndorsements = new Set(JSON.parse(localStorage.getItem('clickedEndorsements')) || []);
-
     // Listen for changes in the database and update the UI
     onValue(endorsementsRef, (snapshot) => {
         console.log("onValue callback");
@@ -37,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const endorsementId = key;
 
             // Verificar si ya se hizo clic en el endorsement
-            const alreadyClicked = clickedEndorsements.has(endorsementId);
+            const alreadyClicked = endorsementData.clicked;
 
             listItem.innerHTML = `
                 <p id="to-field1">To ${endorsementData.to}</p>
@@ -57,15 +54,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.log("Current Likes:", currentLikes);
                     likeCounter.innerText = `❤️ ${currentLikes + 1}`;
 
-                    // Update likes in the database
+                    // Update likes in the database and mark as clicked
                     console.log("Updating likes in the database");
                     await update(ref(database, `endorsements/${endorsementId}`), {
-                        likes: currentLikes + 1
+                        likes: currentLikes + 1,
+                        clicked: true
                     });
-
-                    // Marcar como clicado y almacenar en localStorage
-                    clickedEndorsements.add(endorsementId);
-                    localStorage.setItem('clickedEndorsements', JSON.stringify(Array.from(clickedEndorsements)));
                 }
             });
 
@@ -87,7 +81,8 @@ document.addEventListener("DOMContentLoaded", function () {
             to: toText,
             endorsement: endorsementText,
             from: fromText,
-            likes: 0
+            likes: 0,
+            clicked: false
         });
 
         // Clear input fields
