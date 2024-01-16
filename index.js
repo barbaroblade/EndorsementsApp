@@ -22,7 +22,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const endorsementsList = document.getElementById("endorsements-list");
     const publishButton = document.getElementById("publish-button");
 
-    const clickedEndorsements = new Set();
+    // Utilizamos un conjunto (Set) para rastrear los clics
+    const clickedEndorsements = new Set(JSON.parse(localStorage.getItem('clickedEndorsements')) || []);
 
     // Listen for changes in the database and update the UI
     onValue(endorsementsRef, (snapshot) => {
@@ -35,14 +36,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const listItem = document.createElement("li");
             const endorsementId = key;
 
-            // Check if the endorsement has already been liked
-            const liked = clickedEndorsements.has(endorsementId) || getCookie(`like_${endorsementId}`) === 'true';
+            // Verificar si ya se hizo clic en el endorsement
+            const alreadyClicked = clickedEndorsements.has(endorsementId);
 
             listItem.innerHTML = `
                 <p id="to-field1">To ${endorsementData.to}</p>
                 <p>${endorsementData.endorsement}</p>
                 <p id="from-field1">From ${endorsementData.from}</p>
-                <p id="like-counter" data-endorsement-id="${endorsementId}">❤️ ${liked ? endorsementData.likes : endorsementData.likes + 1}</p>
+                <p id="like-counter" data-endorsement-id="${endorsementId}">❤️ ${alreadyClicked ? endorsementData.likes : endorsementData.likes + 1}</p>
             `;
 
             // Add click event listener to the heart emoji
@@ -51,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
             likeCounter.addEventListener("click", async () => {
                 console.log("Heart Clicked!");
 
-                if (!clickedEndorsements.has(endorsementId)) {
+                if (!alreadyClicked) {
                     const currentLikes = parseInt(likeCounter.innerText.split(" ")[1]);
                     console.log("Current Likes:", currentLikes);
                     likeCounter.innerText = `❤️ ${currentLikes + 1}`;
@@ -62,9 +63,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         likes: currentLikes + 1
                     });
 
-                    // Mark as clicked and set cookie
+                    // Marcar como clicado y almacenar en localStorage
                     clickedEndorsements.add(endorsementId);
-                    setCookie(`like_${endorsementId}`, 'true', 365);
+                    localStorage.setItem('clickedEndorsements', JSON.stringify(Array.from(clickedEndorsements)));
                 }
             });
 
@@ -94,29 +95,4 @@ document.addEventListener("DOMContentLoaded", function () {
         fromField.value = "";
         toField.value = "";
     });
-
-    // Función para establecer una cookie
-    function setCookie(name, value, days) {
-        const date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        const expires = `expires=${date.toUTCString()}`;
-        document.cookie = `${name}=${value};${expires};path=/`;
-    }
-
-    // Función para obtener el valor de una cookie
-    function getCookie(name) {
-        const cname = `${name}=`;
-        const decodedCookie = decodeURIComponent(document.cookie);
-        const ca = decodedCookie.split(';');
-        for (let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) === ' ') {
-                c = c.substring(1);
-            }
-            if (c.indexOf(cname) === 0) {
-                return c.substring(cname.length, c.length);
-            }
-        }
-        return '';
-    }
 });
