@@ -22,6 +22,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const endorsementsList = document.getElementById("endorsements-list");
     const publishButton = document.getElementById("publish-button");
 
+    const clickedEndorsements = new Set(JSON.parse(localStorage.getItem('clickedEndorsements')) || []);
+
     // Listen for changes in the database and update the UI
     onValue(endorsementsRef, (snapshot) => {
         console.log("onValue callback");
@@ -33,14 +35,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const listItem = document.createElement("li");
             const endorsementId = key;
 
-            // Verificar si ya se hizo clic en el endorsement
-            const alreadyClicked = endorsementData.clicked;
-
             listItem.innerHTML = `
                 <p id="to-field1">To ${endorsementData.to}</p>
                 <p>${endorsementData.endorsement}</p>
                 <p id="from-field1">From ${endorsementData.from}</p>
-                <p id="like-counter" data-endorsement-id="${endorsementId}">❤️ ${alreadyClicked ? endorsementData.likes : endorsementData.likes + 1}</p>
+                <p id="like-counter" data-endorsement-id="${endorsementId}">❤️ ${endorsementData.likes}</p>
             `;
 
             // Add click event listener to the heart emoji
@@ -49,17 +48,20 @@ document.addEventListener("DOMContentLoaded", function () {
             likeCounter.addEventListener("click", async () => {
                 console.log("Heart Clicked!");
 
-                if (!alreadyClicked) {
+                if (!clickedEndorsements.has(endorsementId)) {
                     const currentLikes = parseInt(likeCounter.innerText.split(" ")[1]);
                     console.log("Current Likes:", currentLikes);
                     likeCounter.innerText = `❤️ ${currentLikes + 1}`;
 
-                    // Update likes in the database and mark as clicked
+                    // Update likes in the database
                     console.log("Updating likes in the database");
                     await update(ref(database, `endorsements/${endorsementId}`), {
-                        likes: currentLikes + 1,
-                        clicked: true
+                        likes: currentLikes + 1
                     });
+
+                    // Mark as clicked
+                    clickedEndorsements.add(endorsementId);
+                    localStorage.setItem('clickedEndorsements', JSON.stringify(Array.from(clickedEndorsements)));
                 }
             });
 
