@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
             endorsementsList.appendChild(listItem);
         }
     });
+});
 
     // Add click event listener to the publish button
     publishButton.addEventListener("click", function () {
@@ -91,3 +92,4 @@ document.addEventListener("DOMContentLoaded", function () {
         fromField.value = "";
         toField.value = "";
     });
+
